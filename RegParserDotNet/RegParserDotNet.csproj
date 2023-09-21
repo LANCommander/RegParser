@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Authors>pathartl</Authors>
+    <Company>LANCommander</Company>
+    <Description>A .NET library for parsing exported registry .reg files.</Description>
+    <PackageProjectUrl>https://github.com/LANCommander/RegParser</PackageProjectUrl>
+    <PackageIcon>package-icon.png</PackageIcon>
+    <RepositoryUrl>https://github.com/LANCommander/RegParser</RepositoryUrl>
+    <PackageTags>Registry, Reg</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+</Project>

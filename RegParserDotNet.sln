@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.7.34024.191
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RegParserDotNet", "RegParserDotNet\RegParserDotNet.csproj", "{2A6BCFC1-5D26-4EF8-BDF8-1822D0801C1A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RegParserDotNet.Sample", "RegParserDotNet.Sample\RegParserDotNet.Sample.csproj", "{4CC67132-26CD-4B0D-83BD-9B5F192586B7}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2A6BCFC1-5D26-4EF8-BDF8-1822D0801C1A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2A6BCFC1-5D26-4EF8-BDF8-1822D0801C1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2A6BCFC1-5D26-4EF8-BDF8-1822D0801C1A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2A6BCFC1-5D26-4EF8-BDF8-1822D0801C1A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4CC67132-26CD-4B0D-83BD-9B5F192586B7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4CC67132-26CD-4B0D-83BD-9B5F192586B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4CC67132-26CD-4B0D-83BD-9B5F192586B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4CC67132-26CD-4B0D-83BD-9B5F192586B7}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {431E6B1D-3810-4486-87C6-1C7108636DED}
+	EndGlobalSection
+EndGlobal
