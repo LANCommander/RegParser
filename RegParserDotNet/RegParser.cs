@@ -60,10 +60,10 @@ namespace RegParserDotNet
 
         private RegistryEntry GetKey(string path, string property, string value)
         {
-            property = property.TrimStart('"').TrimEnd('"');
+            property = property.Substring(1, property.Length - 2).Replace("\\", ""); // Remove quotes and character escaping
 
             if (value.StartsWith("\""))
-                return new RegistryEntry(path, property, RegistryValueType.REG_SZ, value.TrimStart('"').TrimEnd('"'));
+                return new RegistryEntry(path, property, RegistryValueType.REG_SZ, value.Substring(1, value.Length - 2).Replace("\\", "")); // Remove quotes and character escaping
 
             if (value.StartsWith("dword:"))
                 return new RegistryEntry(path, property, RegistryValueType.REG_DWORD, Int32.Parse(value.Replace("dword:", ""), NumberStyles.HexNumber));
