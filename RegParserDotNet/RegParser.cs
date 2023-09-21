@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;
 
@@ -65,7 +66,7 @@ namespace RegParserDotNet
                 return new RegistryEntry(path, property, RegistryValueType.REG_SZ, value.TrimStart('"').TrimEnd('"'));
 
             if (value.StartsWith("dword:"))
-                return new RegistryEntry(path, property, RegistryValueType.REG_DWORD, Int32.Parse(value.Replace("dword:", "")));
+                return new RegistryEntry(path, property, RegistryValueType.REG_DWORD, Int32.Parse(value.Replace("dword:", ""), NumberStyles.HexNumber));
 
             if (value.StartsWith("hex:"))
                 return new RegistryEntry(path, property, RegistryValueType.REG_BINARY, HexToBytes(value.Replace("hex:", "")));
