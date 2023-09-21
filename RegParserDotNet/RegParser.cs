@@ -9,9 +9,9 @@ namespace RegParserDotNet
     {
         public RegParser() { }
 
-        public IEnumerable<RegistryKey> Parse(string contents)
+        public IEnumerable<RegistryEntry> Parse(string contents)
         {
-            var keys = new List<RegistryKey>();
+            var keys = new List<RegistryEntry>();
 
             string pathPattern = @"^\[(?<Path>.+)\]$";
             string keyPattern = @"^(?<Name>"".+"")=(?<Value>.+)$";
@@ -29,7 +29,7 @@ namespace RegParserDotNet
                     {
                         path = pathMatch.Groups["Path"].Value;
 
-                        keys.Add(new RegistryKey(path));
+                        keys.Add(new RegistryEntry(path));
 
                         continue;
                     }
@@ -57,21 +57,21 @@ namespace RegParserDotNet
             return keys;
         }
 
-        private RegistryKey GetKey(string path, string name, string value)
+        private RegistryEntry GetKey(string path, string property, string value)
         {
-            name = name.TrimStart('"').TrimEnd('"');
+            property = property.TrimStart('"').TrimEnd('"');
 
             if (value.StartsWith("\""))
-                return new RegistryKey(path + "\\" + name, RegistryValueType.REG_SZ, value.TrimStart('"').TrimEnd('"'));
+                return new RegistryEntry(path, property, RegistryValueType.REG_SZ, value.TrimStart('"').TrimEnd('"'));
 
             if (value.StartsWith("dword:"))
-                return new RegistryKey(path + "\\" + name, RegistryValueType.REG_DWORD, Int32.Parse(value.Replace("dword:", "")));
+                return new RegistryEntry(path, property, RegistryValueType.REG_DWORD, Int32.Parse(value.Replace("dword:", "")));
 
             if (value.StartsWith("hex:"))
-                return new RegistryKey(path + "\\" + name, RegistryValueType.REG_BINARY, HexToBytes(value.Replace("hex:", "")));
+                return new RegistryEntry(path, property, RegistryValueType.REG_BINARY, HexToBytes(value.Replace("hex:", "")));
 
             if (value.StartsWith("hex(2):"))
-                return new RegistryKey(path + "\\" + name, RegistryValueType.REG_EXPAND_SZ, HexToBytes(value.Replace("hex(2):", "")));
+                return new RegistryEntry(path, property, RegistryValueType.REG_EXPAND_SZ, HexToBytes(value.Replace("hex(2):", "")));
 
             throw new NotImplementedException("This key type is not supported");
         }
