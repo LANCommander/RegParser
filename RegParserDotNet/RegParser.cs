@@ -15,7 +15,7 @@ namespace RegParserDotNet
             var keys = new List<RegistryEntry>();
 
             string pathPattern = @"^\[(?<Path>.+)\]$";
-            string keyPattern = @"^(?<Name>"".+"")=(?<Value>.+)$";
+            string keyPattern = @"^""?(?<Name>.+?|@)""?=""?(?<Value>.+?)""?$";
 
             using (var reader = new StringReader(contents))
             {
@@ -60,10 +60,7 @@ namespace RegParserDotNet
 
         private RegistryEntry GetKey(string path, string property, string value)
         {
-            property = property.Substring(1, property.Length - 2).Replace("\\", ""); // Remove quotes and character escaping
-
-            if (value.StartsWith("\""))
-                return new RegistryEntry(path, property, RegistryValueType.REG_SZ, value.Substring(1, value.Length - 2).Replace("\\", "")); // Remove quotes and character escaping
+            property = Regex.Unescape(property); // Remove character escaping
 
             if (value.StartsWith("dword:"))
                 return new RegistryEntry(path, property, RegistryValueType.REG_DWORD, Int32.Parse(value.Replace("dword:", ""), NumberStyles.HexNumber));
@@ -74,7 +71,9 @@ namespace RegParserDotNet
             if (value.StartsWith("hex(2):"))
                 return new RegistryEntry(path, property, RegistryValueType.REG_EXPAND_SZ, HexToBytes(value.Replace("hex(2):", "")));
 
-            throw new NotImplementedException("This key type is not supported");
+            return new RegistryEntry(path, property, RegistryValueType.REG_SZ, Regex.Unescape(value)); // Remove character escaping
+
+            // throw new NotImplementedException("This key type is not supported");
         }
 
         private readonly static Dictionary<char, byte> HexMap = new Dictionary<char, byte>()
