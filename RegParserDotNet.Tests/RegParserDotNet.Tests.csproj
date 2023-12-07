@@ -19,4 +19,10 @@
     <ProjectReference Include="..\RegParserDotNet\RegParserDotNet.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Sample.reg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

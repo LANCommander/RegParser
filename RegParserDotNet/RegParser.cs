@@ -33,13 +33,13 @@ namespace RegParserDotNet
 
                         if (pathMatch.Success)
                         {
-                            path = pathMatch.Groups["Path"].Value;
-
-                            keys.Add(new RegistryEntry(path));
-
                             keys.AddRange(ParsePathContents(pathContents, path));
 
                             pathContents = "";
+
+                            path = pathMatch.Groups["Path"].Value;
+
+                            keys.Add(new RegistryEntry(path));
 
                             continue;
                         }
