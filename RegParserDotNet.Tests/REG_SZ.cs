@@ -12,9 +12,14 @@ namespace RegParserDotNet.Tests
 @"[HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Chaos-League-MS]
 @=""C:\\Games\\Chaos League""";
 
+        public const string ExportWithBlank =
+@"[HKEY_CURRENT_USER\Software\Cavedog Entertainment\Total Annihilation]
+""Password""=""""";
+
         [Theory]
         [InlineData(ExportWithQuotes, "Test \"Thing\"", "With a value!\"Test\"")]
         [InlineData(ExportWithPathValue, "@", "C:\\Games\\Chaos League")]
+        [InlineData(ExportWithBlank, "Password", "")]
         public void PropertyIsParseable(string input, string expectedProperty, string expectedValue)
         {
             var parser = new RegParser();

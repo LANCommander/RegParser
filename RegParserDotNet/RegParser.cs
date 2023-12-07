@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace RegParserDotNet
@@ -15,65 +16,123 @@ namespace RegParserDotNet
             var keys = new List<RegistryEntry>();
 
             string pathPattern = @"^\[(?<Path>.+)\]$";
-            string keyPattern = @"^""?(?<Name>.+?|@)""?=""?(?<Value>.+?)""?$";
 
             using (var reader = new StringReader(contents))
             {
                 string line;
                 string path = "";
+                string pathContents = "";
 
-                while ((line = reader.ReadLine()) != null)
+                do
                 {
-                    var pathMatch = Regex.Match(line, pathPattern);
+                    line = reader.ReadLine();
 
-                    if (pathMatch.Success)
+                    if (line != null)
                     {
-                        path = pathMatch.Groups["Path"].Value;
+                        var pathMatch = Regex.Match(line, pathPattern);
 
-                        keys.Add(new RegistryEntry(path));
-
-                        continue;
-                    }
-
-                    var keyMatch = Regex.Match(line, keyPattern);
-
-                    if (keyMatch.Success)
-                    {
-                        var name = keyMatch.Groups["Name"].Value;
-                        var value = keyMatch.Groups["Value"].Value;
-
-                        // Handle keys that may span multiple lines. Popular with REG_BINARY
-                        while (line.EndsWith("\\"))
+                        if (pathMatch.Success)
                         {
-                            line = reader.ReadLine();
+                            path = pathMatch.Groups["Path"].Value;
 
-                            value += line.Trim();
+                            keys.Add(new RegistryEntry(path));
+
+                            keys.AddRange(ParsePathContents(pathContents, path));
+
+                            pathContents = "";
+
+                            continue;
                         }
-
-                        keys.Add(GetKey(path, name, value));
                     }
+                    else
+                        keys.AddRange(ParsePathContents(pathContents, path));
+
+                    pathContents += line + "\n";
                 }
+                while (line != null);                
             }
 
             return keys;
         }
 
-        private RegistryEntry GetKey(string path, string property, string value)
+        private IEnumerable<RegistryEntry> ParsePathContents(string pathContents, string path)
         {
-            property = Regex.Unescape(property); // Remove character escaping
+            string propertyNamePattern = @"(?>(?<DefaultProperty>@)=|(?<!\\)""(?<PropertyName>.+)(?<!\\)""=)";
+            string dwordValuePattern = @"dword:(?<DwordValue>[0-9a-fA-F]+)$";
+            string stringValuePattern = @"(?!=\\)""(?<StringValue>.*)(?!=\\)""\s*$";
+            string binaryValuePattern = @"hex:(?<BinaryValue>(?:[0-9a-fA-F]{2},?)+\\(?:\n\s*(?:[0-9a-fA-F]{2},?)+\\?)*)";
 
-            if (value.StartsWith("dword:"))
-                return new RegistryEntry(path, property, RegistryValueType.REG_DWORD, Int32.Parse(value.Replace("dword:", ""), NumberStyles.HexNumber));
+            var fullPattern = $"^{propertyNamePattern}(?>{dwordValuePattern}|{stringValuePattern}|{binaryValuePattern})";
 
-            if (value.StartsWith("hex:"))
-                return new RegistryEntry(path, property, RegistryValueType.REG_BINARY, HexToBytes(value.Replace("hex:", "")));
+            var keys = new List<RegistryEntry>();
 
-            if (value.StartsWith("hex(2):"))
-                return new RegistryEntry(path, property, RegistryValueType.REG_EXPAND_SZ, HexToBytes(value.Replace("hex(2):", "")));
+            var matches = Regex.Matches(pathContents, fullPattern, RegexOptions.Multiline);
 
-            return new RegistryEntry(path, property, RegistryValueType.REG_SZ, Regex.Unescape(value)); // Remove character escaping
+            foreach (Match match in matches)
+            {
+                keys.Add(GetEntryFromMatch(match, path));
+            }
 
-            // throw new NotImplementedException("This key type is not supported");
+            return keys;
+        }
+
+        private RegistryEntry GetEntryFromMatch(Match match, string path)
+        {
+            var entry = new RegistryEntry(path)
+            {
+                Type = GetTypeFromMatch(match),
+                Property = Regex.Unescape(match.Groups["PropertyName"].Value)
+            };
+
+            if (match.Groups["DefaultProperty"].Success)
+                entry.Property = match.Groups["DefaultProperty"].Value;
+
+            switch (entry.Type)
+            {
+                case RegistryValueType.REG_DWORD:
+                    entry.Value = Int32.Parse(match.Groups["DwordValue"].Value, NumberStyles.HexNumber);
+                    break;
+
+                case RegistryValueType.REG_BINARY:
+                    entry.Value = HexToBytes(match.Groups["BinaryValue"].Value);
+                    break;
+
+                case RegistryValueType.REG_SZ:
+                    entry.Value = Regex.Unescape(match.Groups["StringValue"].Value);
+                    break;
+            }
+
+            return entry;
+        }
+
+        private RegistryValueType GetTypeFromMatch(Match match)
+        {
+
+            var groupNames = new string[] {
+                "DwordValue",
+                "StringValue",
+                "BinaryValue"
+            };
+
+            foreach (var groupName in groupNames)
+            {
+                if (match.Groups[groupName].Success)
+                {
+                    switch (groupName)
+                    {
+                        case "DwordValue":
+                            return RegistryValueType.REG_DWORD;
+
+                        case "StringValue":
+                            return RegistryValueType.REG_SZ;
+
+                        case "BinaryValue":
+                            return RegistryValueType.REG_BINARY;
+                    }
+                }
+            }
+
+            return RegistryValueType.REG_NONE;
         }
 
         private readonly static Dictionary<char, byte> HexMap = new Dictionary<char, byte>()
@@ -92,7 +151,7 @@ namespace RegParserDotNet
                 throw new ArgumentException("Input can't be empty");
 
             // Sanitize
-            hex = hex.Replace("0x", "").Replace(",", "").Replace("\\", "");
+            hex = hex.Replace("0x", "").Replace(",", "").Replace("\\", "").Replace("\n", "").Replace(" ", "");
 
             if (hex.Length % 2 != 0)
                 throw new ArgumentException("Hex string must be an even number of characters");
